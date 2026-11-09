@@ -9135,7 +9135,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         FoldersHelper.INSTANCE.updateFoldersOffset(this, onlySelect);
 
         if (floatingButtonStories != null) {
-            floatingButtonStories.setTranslationY(baseTranslationY - dp(52) - floatingButtonsOffset);
+            floatingButtonStories.setTranslationY(baseTranslationY - dp(60) - floatingButtonsOffset);
             if (storyHint != null) {
                 storyHint.setTranslationY(baseTranslationY - dp(52) - floatingButtonsOffset);
             }
