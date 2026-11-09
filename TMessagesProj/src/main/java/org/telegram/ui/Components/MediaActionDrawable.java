@@ -590,7 +590,11 @@ public class MediaActionDrawable extends Drawable {
                 float rad = Math.max(4, 360 * animatedDownloadProgress);
                 int diff = AndroidUtilities.dp(isMini ? 2 : 4);
                 rect.set(bounds.left + diff, bounds.top + diff, bounds.right - diff, bounds.bottom - diff);
+                if (RadialProgressView.MD3_LOADER) {
+                drawMd3Wave(canvas, rect, downloadRadOffset, rad, paint);
+                } else {
                 canvas.drawArc(rect, downloadRadOffset, rad, false, paint);
+                }
             }
         }
 
