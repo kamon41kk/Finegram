@@ -27,6 +27,18 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache native
+        uses: actions/cache@v4
+        with:
+          path: |
+            TMessagesProj/.cxx
+            TMessagesProj/build/intermediates/cxx
+          key: cxx-${{ runner.os }}-${{ hashFiles('TMessagesProj/jni/**/CMakeLists.txt') }}
+          restore-keys: cxx-${{ runner.os }}-
+
       - name: Python 3.11
         uses: actions/setup-python@v5
         with:
