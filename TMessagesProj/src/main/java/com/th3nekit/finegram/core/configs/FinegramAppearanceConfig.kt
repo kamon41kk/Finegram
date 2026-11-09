@@ -92,6 +92,8 @@ object FinegramAppearanceConfig {
 
     var iosChatList by sharedPreferences.boolean("FG_IosChatList", false)
 
+    var md3ChatList by sharedPreferences.boolean("FG_Md3ChatList", true)
+
     var disableDividers by sharedPreferences.boolean("AP_DisableDividers", true)
 
     var tabsHideAllChats by sharedPreferences.boolean("CP_NewTabs_RemoveAllChats", false)
