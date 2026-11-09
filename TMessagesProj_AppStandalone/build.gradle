@@ -192,14 +192,6 @@ android {
             enableSplit = false
         }
     }
-
-    splits.abi {
-        enable true
-        reset()
-        //noinspection ChromeOsAbiSupport
-        include "arm64-v8a"
-        universalApk false
-    }
 }
 
 android.applicationVariants.configureEach { variant ->
