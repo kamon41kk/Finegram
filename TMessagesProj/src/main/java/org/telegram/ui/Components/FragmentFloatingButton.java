@@ -75,7 +75,12 @@ public class FragmentFloatingButton extends FrameLayout implements FactorAnimato
 
         ScaleStateListAnimator.apply(this);
         if (!isSubButton) {
-            setOutlineProvider(ViewOutlineProviderImpl.BOUNDS_OVAL);
+            setOutlineProvider(new android.view.ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, android.graphics.Outline outline) {
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), dp(16));
+                }
+            });
             setTranslationZ(dpf2(0.5f));
         }
 
@@ -168,9 +173,16 @@ public class FragmentFloatingButton extends FrameLayout implements FactorAnimato
         } else {
             imageView.setColorFilter(Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider), PorterDuff.Mode.SRC_IN);
             progressView.setProgressColor(Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider));
-            setBackground(Theme.createSimpleSelectorCircleDrawable(dp(48),
-                Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider),
-                Theme.getColor(Theme.key_featuredStickers_addButtonPressed, resourcesProvider)
+            final boolean dark = resourcesProvider != null ? resourcesProvider.isDark() : Theme.isCurrentThemeDark();
+            final int accent = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
+            final int surface = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
+            final int container = ColorUtils.blendARGB(accent, surface, dark ? 0.6f : 0.75f);
+            final int onContainer = dark ? ColorUtils.blendARGB(accent, 0xFFFFFFFF, 0.6f) : ColorUtils.blendARGB(accent, 0xFF000000, 0.45f);
+            imageView.setColorFilter(onContainer, PorterDuff.Mode.SRC_IN);
+            progressView.setProgressColor(onContainer);
+            setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(16),
+                container,
+                ColorUtils.blendARGB(container, onContainer, 0.12f)
             ));
         }
     }
@@ -184,7 +196,7 @@ public class FragmentFloatingButton extends FrameLayout implements FactorAnimato
     }
 
     public static FrameLayout.LayoutParams createDefaultLayoutParams() {
-        return LayoutHelper.createFrame(48, 48,
+        return LayoutHelper.createFrame(56, 56,
                 (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.BOTTOM,
                 20, 0, 20, 14);
     }
