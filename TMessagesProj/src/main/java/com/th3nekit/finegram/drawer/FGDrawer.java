@@ -27,10 +27,10 @@ import org.telegram.ui.ActionBar.Theme;
 
 public class FGDrawer extends FrameLayout {
 
-    private static final int MAX_WIDTH_DP = 300;
+    private static final int MAX_WIDTH_DP = 360;
     private static final int EDGE_GAP_DP = 56;
-    private static final int CORNER_DP = 20;
-    private static final int SCRIM_ALPHA = 102;
+    private static final int CORNER_DP = 16;
+    private static final int SCRIM_ALPHA = 82;
 
     private final FrameLayout panel;
     private final Paint scrimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -196,7 +196,7 @@ public class FGDrawer extends FrameLayout {
         canvas.restore();
 
         edgePaint.setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(
-                Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), 30));
+                Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), 0));
         edgePaint.setStrokeWidth(Math.max(1, AndroidUtilities.dp(0.66f)));
         edgePath.rewind();
         final float edgeX = rtl ? clipRect.left : clipRect.right;
