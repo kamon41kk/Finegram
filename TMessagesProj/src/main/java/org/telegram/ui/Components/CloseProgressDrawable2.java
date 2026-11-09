@@ -4,6 +4,7 @@
  * You should have received a copy of the license in this archive (see LICENSE).
  *
  * Copyright Nikolai Kudashov, 2013-2018.
+ * MD3 wavy progress added for Finegram MD3.
  */
 
 package org.telegram.ui.Components;
@@ -12,9 +13,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.core.graphics.ColorUtils;
@@ -32,6 +35,7 @@ public class CloseProgressDrawable2 extends Drawable {
     private int side;
     private int globalColorAlpha = 255;
     private int currentColor;
+    private final Path md3WavePath = new Path();
 
     public CloseProgressDrawable2() {
         this(2);
@@ -42,6 +46,7 @@ public class CloseProgressDrawable2 extends Drawable {
         paint.setColor(0xffffffff);
         paint.setStrokeWidth(AndroidUtilities.dp(widthDp));
         paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
         side = AndroidUtilities.dp(8);
     }
@@ -70,6 +75,24 @@ public class CloseProgressDrawable2 extends Drawable {
 
     public void setSide(int value) {
         side = value;
+    }
+
+    private void drawMd3Wave(Canvas canvas, RectF r, float startDeg, float sweepDeg) {
+        float cx = r.centerX(), cy = r.centerY();
+        float baseR = Math.min(r.width(), r.height()) / 2f;
+        float amp = Math.max(1f, baseR * 0.09f);
+        int waves = Math.max(6, Math.round(baseR / AndroidUtilities.dp(2.2f)));
+        float phase = (SystemClock.elapsedRealtime() % 1200L) / 1200f * (float) (Math.PI * 2);
+        int steps = Math.max(12, (int) (Math.abs(sweepDeg) / 3f));
+        md3WavePath.rewind();
+        for (int i = 0; i <= steps; i++) {
+            double a = Math.toRadians(startDeg + sweepDeg * i / steps);
+            float rr = baseR - amp + amp * (float) Math.sin(a * waves + phase);
+            float x = cx + rr * (float) Math.cos(a);
+            float y = cy + rr * (float) Math.sin(a);
+            if (i == 0) md3WavePath.moveTo(x, y); else md3WavePath.lineTo(x, y);
+        }
+        canvas.drawPath(md3WavePath, paint);
     }
 
     @Override
@@ -142,7 +165,16 @@ public class CloseProgressDrawable2 extends Drawable {
         int cx = getBounds().centerX();
         int cy = getBounds().centerY();
         rect.set(cx - side, cy - side, cx + side, cy + side);
-        canvas.drawArc(rect, (angle < 360 ? 0 : angle - 360) - 45, (angle < 360 ? angle : 720 - angle), false, paint);
+        float start = (angle < 360 ? 0 : angle - 360) - 45;
+        float sweep = (angle < 360 ? angle : 720 - angle);
+        if (RadialProgressView.MD3_LOADER) {
+            drawMd3Wave(canvas, rect, start, sweep);
+            if (animating) {
+                invalidateSelf();
+            }
+        } else {
+            canvas.drawArc(rect, start, sweep, false, paint);
+        }
 
         lastFrameTime = newTime;
     }
