@@ -565,7 +565,11 @@ public class MediaActionDrawable extends Drawable {
                     canvas.drawArc(rect, 0, 360, false, paint);
                     paint.setAlpha(alpha);
                 }
+                if (RadialProgressView.MD3_LOADER) {
+                drawMd3Wave(canvas, rect, downloadRadOffset, rad, paint);
+                } else {
                 canvas.drawArc(rect, downloadRadOffset, rad, false, paint);
+                }
             }
             if (progressScale != 1.0f) {
                 canvas.restore();
@@ -917,5 +921,24 @@ public class MediaActionDrawable extends Drawable {
     @Override
     public int getMinimumHeight() {
         return AndroidUtilities.dp(48);
+    }
+            private final android.graphics.Path md3WavePath = new android.graphics.Path();
+
+    private void drawMd3Wave(Canvas canvas, RectF r, float startDeg, float sweepDeg, Paint p) {
+        float cx = r.centerX(), cy = r.centerY();
+        float baseR = Math.min(r.width(), r.height()) / 2f;
+        float amp = Math.max(1f, baseR * 0.06f);
+        int waves = Math.max(6, Math.round(baseR / AndroidUtilities.dp(2.6f)));
+        float phase = (android.os.SystemClock.elapsedRealtime() % 1200L) / 1200f * (float) (Math.PI * 2);
+        int steps = Math.max(12, (int) (Math.abs(sweepDeg) / 3f));
+        md3WavePath.rewind();
+        for (int i = 0; i <= steps; i++) {
+            double a = Math.toRadians(startDeg + sweepDeg * i / steps);
+            float rr = baseR - amp + amp * (float) Math.sin(a * waves + phase);
+            float x = cx + rr * (float) Math.cos(a);
+            float y = cy + rr * (float) Math.sin(a);
+            if (i == 0) md3WavePath.moveTo(x, y); else md3WavePath.lineTo(x, y);
+        }
+        canvas.drawPath(md3WavePath, p);
     }
 }
