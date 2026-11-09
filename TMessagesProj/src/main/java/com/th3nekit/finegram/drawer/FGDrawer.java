@@ -107,7 +107,7 @@ public class FGDrawer extends FrameLayout {
         final float hidden = (1f - progress) * width;
         panel.setTranslationX(rtl ? hidden : -hidden);
         if (contentBehind != null) {
-            final float push = progress * width * 0.3f;
+            final float push = progress * width * 0f;
             contentBehind.setTranslationX(rtl ? -push : push);
         }
         setVisibility(progress <= 0.001f ? GONE : VISIBLE);
