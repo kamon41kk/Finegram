@@ -25,7 +25,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -101,6 +100,11 @@ jobs:
             echo "KEY_ALIAS=finegram"
             echo "KEY_PASSWORD=$KS_PASS"
           } > private.properties
+
+      - name: MD3 patch
+        run: |
+          sed -i 's/\r$//' md3_patch.py
+          python3 md3_patch.py
 
       - name: Build
         run: |
