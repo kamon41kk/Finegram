@@ -702,7 +702,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         storyParams.allowLongress = true;
         this.resourcesProvider = resourcesProvider;
         parentFragment = fragment;
-        if (fragment != null && FinegramAppearanceConfig.INSTANCE.getIosChatList()) {
+        if (fragment != null && (FinegramAppearanceConfig.INSTANCE.getIosChatList() || FinegramAppearanceConfig.INSTANCE.getMd3ChatList())) {
             avatarStart = 13;
             messagePaddingStart = 78;
         }
@@ -1167,8 +1167,28 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
     }
 
     private boolean isIosChatList() {
-        return parentFragment != null && FinegramAppearanceConfig.INSTANCE.getIosChatList()
+        return parentFragment != null && (FinegramAppearanceConfig.INSTANCE.getIosChatList() || FinegramAppearanceConfig.INSTANCE.getMd3ChatList())
                 && !isTopic && !isForumCell() && !isTransitionSupport;
+    }
+
+    private final Paint md3CardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF md3CardRect = new RectF();
+
+    private boolean isMd3ChatList() {
+        return parentFragment != null && FinegramAppearanceConfig.INSTANCE.getMd3ChatList()
+                && !isTopic && !isForumCell() && !isTransitionSupport;
+    }
+
+    private void drawMd3Card(Canvas canvas) {
+        int bg = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
+        int accent = Theme.getColor(Theme.key_chats_actionBackground, resourcesProvider);
+        boolean highlighted = getIsPinned() || drawPinBackground || currentDialogFolderId != 0;
+        boolean dark = Theme.isCurrentThemeDark();
+        float tint = dark ? (highlighted ? 0.16f : 0.09f) : (highlighted ? 0.12f : 0.06f);
+        md3CardPaint.setColor(ColorUtils.blendARGB(bg, accent, tint));
+        md3CardPaint.setAlpha((int) (255 * (1f - rightFragmentOpenedProgress)));
+        md3CardRect.set(dp(6), dp(3), getMeasuredWidth() - dp(6), getMeasuredHeight() - dp(3));
+        canvas.drawRoundRect(md3CardRect, dp(24), dp(24), md3CardPaint);
     }
 
     private int computeHeight() {
@@ -4250,7 +4270,12 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             gtx += translationX;
         }
 
+        if (isMd3ChatList()) {
+            drawMd3Card(canvas);
+        }
+
         float cornersRadius = dp(8) * cornerProgress;
+        
         if (isSelected) {
             rect.set(0, 0, getMeasuredWidth(), AndroidUtilities.lerp(getMeasuredHeight(), getCollapsedHeight(), rightFragmentOpenedProgress));
             rect.offset(0, -translateY + collapseOffset);
@@ -5052,7 +5077,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             canvas.restore();
         }
 
-        if (useSeparator) {
+        if (useSeparator && !isMd3ChatList()) {
             int left;
             if (fullSeparator || currentDialogFolderId != 0 && archiveHidden && !fullSeparator2 || fullSeparator2 && !archiveHidden) {
                 left = 0;
