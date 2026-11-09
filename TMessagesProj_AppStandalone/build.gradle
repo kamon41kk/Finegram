@@ -130,7 +130,7 @@ android {
         afat {
             ndk {
                 //noinspection ChromeOsAbiSupport
-                abiFilters "armeabi-v7a", "arm64-v8a"
+                abiFilters "arm64-v8a"
             }
             ext {
                 abiVersionCode = 9
@@ -197,8 +197,8 @@ android {
         enable true
         reset()
         //noinspection ChromeOsAbiSupport
-        include "arm64-v8a", "armeabi-v7a"
-        universalApk true
+        include "arm64-v8a"
+        universalApk false
     }
 }
 
