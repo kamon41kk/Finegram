@@ -4,6 +4,7 @@
  * You should have received a copy of the license in this archive (see LICENSE).
  *
  * Copyright Nikolai Kudashov, 2013-2018.
+ * MD3 Expressive loading indicator added for Finegram MD3.
  */
 
 package org.telegram.ui.Components;
@@ -11,11 +12,14 @@ package org.telegram.ui.Components;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 import androidx.annotation.Keep;
 
@@ -52,6 +56,29 @@ public class RadialProgressView extends View {
     private boolean noProgress = true;
     private final Theme.ResourcesProvider resourcesProvider;
 
+    // ===== MD3 Expressive loading indicator =====
+    public static boolean MD3_LOADER = true;
+
+    // {lobes, amplitude, squish}; lobes == 0 -> ellipse with given squish
+    private static final float[][] MD3_SHAPES = {
+            {10, 0.10f, 1f},   // soft burst
+            {9, 0.07f, 1f},    // cookie 9
+            {5, 0.06f, 1f},    // pentagon
+            {0, 0f, 0.62f},    // pill
+            {8, 0.09f, 1f},    // sunny
+            {4, 0.10f, 1f},    // cookie 4
+            {0, 0f, 0.82f},    // oval
+    };
+    private static final long MD3_STEP = 650;
+    private static final long MD3_MORPH = 450;
+    private static final int MD3_POINTS = 96;
+
+    private final Path md3Path = new Path();
+    private final Paint md3Paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final OvershootInterpolator md3Interpolator = new OvershootInterpolator(1.6f);
+    private long md3Start;
+    // ============================================
+
     public RadialProgressView(Context context) {
         this(context, null);
     }
@@ -70,6 +97,8 @@ public class RadialProgressView extends View {
         progressPaint.setStrokeCap(Paint.Cap.ROUND);
         progressPaint.setStrokeWidth(AndroidUtilities.dp(3));
         progressPaint.setColor(progressColor);
+
+        md3Paint.setStyle(Paint.Style.FILL);
     }
 
     public void setUseSelfAlpha(boolean value) {
@@ -117,6 +146,7 @@ public class RadialProgressView extends View {
         animatedProgress = from.animatedProgress;
         risingCircleLength = from.risingCircleLength;
         progressAnimationStart = from.progressAnimationStart;
+        md3Start = from.md3Start;
         updateAnimation(17 * 5);
     }
 
@@ -223,8 +253,67 @@ public class RadialProgressView extends View {
         }
     }
 
+    private boolean useMd3() {
+        return MD3_LOADER && noProgress && toCircleProgress == 0f;
+    }
+
+    private static double md3Radius(float[] s, double a) {
+        if (s[0] > 0) {
+            return (1.0 + s[1] * Math.cos(s[0] * a)) / (1.0 + s[1]);
+        }
+        double c = Math.cos(a);
+        double sn = Math.sin(a) / s[2];
+        return 1.0 / Math.sqrt(c * c + sn * sn);
+    }
+
+    private void drawMd3(Canvas canvas, float cx, float cy) {
+        long now = SystemClock.uptimeMillis();
+        if (md3Start == 0) {
+            md3Start = now;
+        }
+        long elapsed = now - md3Start;
+        int step = (int) (elapsed / MD3_STEP);
+        long inStep = elapsed % MD3_STEP;
+        float t = Math.min(1f, inStep / (float) MD3_MORPH);
+        float e = md3Interpolator.getInterpolation(t);
+
+        float[] from = MD3_SHAPES[step % MD3_SHAPES.length];
+        float[] to = MD3_SHAPES[(step + 1) % MD3_SHAPES.length];
+
+        float rotation = (elapsed % 4500L) * 360f / 4500f + ((step % 4) + e) * 90f;
+        float radius = size * 0.42f;
+
+        md3Path.rewind();
+        for (int i = 0; i < MD3_POINTS; i++) {
+            double a = 2 * Math.PI * i / MD3_POINTS;
+            double r1 = md3Radius(from, a);
+            double r2 = md3Radius(to, a);
+            float r = (float) (r1 + (r2 - r1) * e) * radius;
+            float x = (float) (Math.cos(a) * r);
+            float y = (float) (Math.sin(a) * r);
+            if (i == 0) {
+                md3Path.moveTo(x, y);
+            } else {
+                md3Path.lineTo(x, y);
+            }
+        }
+        md3Path.close();
+
+        md3Paint.setColor(progressPaint.getColor());
+        canvas.save();
+        canvas.translate(cx, cy);
+        canvas.rotate(rotation);
+        canvas.drawPath(md3Path, md3Paint);
+        canvas.restore();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
+        if (useMd3()) {
+            drawMd3(canvas, getMeasuredWidth() / 2f, getMeasuredHeight() / 2f);
+            updateAnimation();
+            return;
+        }
         int x = (getMeasuredWidth() - size) / 2;
         int y = (getMeasuredHeight() - size) / 2;
         cicleRect.set(x, y, x + size, y + size);
@@ -233,7 +322,12 @@ public class RadialProgressView extends View {
     }
 
     public void draw(Canvas canvas, float cx, float cy) {
-        cicleRect.set(cx - size / 2f, cy - size / 2f, cx + size / 2f, cy +  size / 2f);
+        if (useMd3()) {
+            drawMd3(canvas, cx, cy);
+            updateAnimation();
+            return;
+        }
+        cicleRect.set(cx - size / 2f, cy - size / 2f, cx + size / 2f, cy + size / 2f);
         canvas.drawArc(cicleRect, radOffset, drawingCircleLenght = currentCircleLength, false, progressPaint);
         updateAnimation();
     }
