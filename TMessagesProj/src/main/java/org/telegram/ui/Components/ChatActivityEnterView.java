@@ -3689,11 +3689,11 @@ public class ChatActivityEnterView extends FrameLayout implements
                         }
                     }
 
-                    final float r = dpf2(19);
+                    final float r = dpf2(20);
                     paint.setColor(iOSMessageInputFieldAvailable() ? Color.TRANSPARENT : getThemedColor(Theme.key_chat_messagePanelSend));
-                    final float margin = dpf2(3);
-                    final float height = dpf2(38);
-                    final float width = dpf2(38);
+                    final float margin = dpf2(2);
+                    final float height = dpf2(40);
+                    final float width = dpf2(40);
                     backgroundRect.set(
                             getMeasuredWidth() - width - margin,
                             getMeasuredHeight() - height - margin,
@@ -5048,12 +5048,33 @@ public class ChatActivityEnterView extends FrameLayout implements
             if (SharedConfig.chatBlurEnabled() && sizeNotifierLayout != null) {
                 blurBounds.set(0, bottom, getWidth(), getHeight());
                 sizeNotifierLayout.drawBlurRect(canvas, getTop(), blurBounds, backgroundPaint, false);
-            } else {
-                canvas.drawRect(0, bottom, getWidth(), getHeight(), backgroundPaint);
-            }
         } else {
             canvas.drawRect(0, bottom, getWidth(), getHeight(), getThemedPaint(Theme.key_paint_chatComposeBackground));
         }
+        drawMd3InputPill(canvas);
+    }
+
+    private final Paint md3FieldPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF md3FieldRect = new RectF();
+
+    private void drawMd3InputPill(Canvas canvas) {
+        if (isStories || iOSMessageInputFieldAvailable() || textFieldContainer == null || messageEditTextContainer == null) {
+            return;
+        }
+        if (messageEditTextContainer.getVisibility() != VISIBLE || botWebViewButton != null && botWebViewButton.getVisibility() == VISIBLE) {
+            return;
+        }
+        final float left = textFieldContainer.getX() + messageEditTextContainer.getX() + dp(6);
+        final float top = textFieldContainer.getY() + messageEditTextContainer.getY() + dp(4);
+        final float right = textFieldContainer.getX() + messageEditTextContainer.getX() + messageEditTextContainer.getWidth() - dp(2);
+        final float bottomY = textFieldContainer.getY() + messageEditTextContainer.getY() + messageEditTextContainer.getHeight() - dp(4);
+        if (right - left <= dp(40) || bottomY - top <= dp(20)) {
+            return;
+        }
+        md3FieldRect.set(left, top, right, bottomY);
+        md3FieldPaint.setColor(ColorUtils.blendARGB(getThemedColor(Theme.key_chat_messagePanelBackground), getThemedColor(Theme.key_chat_messagePanelSend), 0.12f));
+        final float radius = Math.min(md3FieldRect.height() / 2f, dp(22));
+        canvas.drawRoundRect(md3FieldRect, radius, radius, md3FieldPaint);
     }
 
     public float getVisualHeight() {
