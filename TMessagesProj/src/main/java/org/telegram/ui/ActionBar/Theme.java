@@ -8077,8 +8077,20 @@ public class Theme {
                 chat_msgTextCode3Paint.setTypeface(Typeface.MONOSPACE);
                 chat_msgCodeBgPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
                 chat_ephemeralPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+                // MD3: keep Roboto inside message bubbles
+                Typeface md3BubbleBold = Build.VERSION.SDK_INT >= 28 ? Typeface.create(Typeface.DEFAULT, 500, false) : Typeface.DEFAULT_BOLD;
+                chat_msgTextPaint.setTypeface(Typeface.DEFAULT);
+                chat_msgGameTextPaint.setTypeface(Typeface.DEFAULT);
+                chat_replyTextPaint.setTypeface(Typeface.DEFAULT);
+                chat_quoteTextPaint.setTypeface(Typeface.DEFAULT);
+                chat_forwardNamePaint.setTypeface(Typeface.DEFAULT);
+                chat_adminPaint.setTypeface(Typeface.DEFAULT);
+                chat_timePaint.setTypeface(Typeface.DEFAULT);
+                chat_namePaint.setTypeface(md3BubbleBold);
+                chat_replyNamePaint.setTypeface(md3BubbleBold);
+                chat_topicTextPaint.setTypeface(md3BubbleBold);
+                chat_msgBotButtonPaint.setTypeface(md3BubbleBold);
             }
-
             final float[] emojiSizePercents = new float[] {.68f, .46f, .34f, .28f, .22f, .19f};
             for (int i = 0; i < chat_msgTextPaintEmoji.length; ++i) {
                 chat_msgTextPaintEmoji[i] = new TextPaint(Paint.ANTI_ALIAS_FLAG);
