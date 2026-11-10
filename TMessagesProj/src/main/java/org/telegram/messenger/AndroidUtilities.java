@@ -269,7 +269,29 @@ public class AndroidUtilities {
     public static ThreadLocal<byte[]> readBufferLocal = new ThreadLocal<>();
     public static ThreadLocal<byte[]> bufferLocal = new ThreadLocal<>();
 
+    private static boolean md3DefaultFontApplied;
+
+    public static void md3ApplyDefaultFont() {
+        if (md3DefaultFontApplied) return;
+        md3DefaultFontApplied = true;
+        if (Build.VERSION.SDK_INT < 26) return;
+        try {
+            if (!com.th3nekit.finegram.core.configs.FinegramAppearanceConfig.INSTANCE.getMd3Font()) return;
+            ApplicationLoader.applicationContext.getAssets().open("fonts/gsans.ttf").close();
+            Typeface.Builder b = new Typeface.Builder(ApplicationLoader.applicationContext.getAssets(), "fonts/gsans.ttf");
+            b.setFontVariationSettings("'wght' 400");
+            b.setWeight(400);
+            Typeface t = b.build();
+            if (t == null) return;
+            java.lang.reflect.Method m = Typeface.class.getDeclaredMethod("setDefault", Typeface.class);
+            m.setAccessible(true);
+            m.invoke(null, t);
+        } catch (Throwable ignore) {
+        }
+    }
+
     public static Typeface bold() {
+        md3ApplyDefaultFont();
         if (mediumTypeface == null) {
             if (SharedConfig.useSystemBoldFont && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 mediumTypeface = Typeface.create(null, 500, false);
