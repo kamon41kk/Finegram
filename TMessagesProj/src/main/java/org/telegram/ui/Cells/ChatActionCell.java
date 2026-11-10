@@ -414,6 +414,9 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
     private ArrayList<Integer> lineWidths = new ArrayList<>();
     private ArrayList<Integer> lineHeights = new ArrayList<>();
     private Path backgroundPath = new Path();
+    private boolean md3DatePill;
+    private float md3PillCenterY;
+    private final RectF md3LineRect = new RectF();
     private int backgroundLeft, backgroundRight;
     private RectF rect = new RectF();
     private boolean invalidatePath = true;
@@ -3653,6 +3656,21 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
             }
             backgroundPath.close();
 
+            md3DatePill = false;
+            if (count == 1 && (customDate != 0 || currentMessageObject != null && currentMessageObject.messageOwner != null && currentMessageObject.messageOwner.action == null && currentMessageObject.messageOwner.id == 0)) {
+                md3DatePill = true;
+                final float pillHalfWidth = (float) Math.ceil(textLayout.getLineWidth(0)) / 2f + dp(12);
+                final float pillTop = dp(4);
+                final float pillBottom = pillTop + textLayout.getLineBottom(0) + dp(6);
+                rect.set(x - pillHalfWidth, pillTop, x + pillHalfWidth, pillBottom);
+                backgroundLeft = (int) rect.left;
+                backgroundRight = (int) rect.right;
+                md3PillCenterY = rect.centerY();
+                backgroundPath.reset();
+                backgroundPath.addRoundRect(rect, rect.height() / 2f, rect.height() / 2f, Path.Direction.CW);
+                backgroundPath.close();
+            }
+
             if (isMessageActionSuggestedPostApproval() && !isNewStyleButtonLayout()) {
                 rect.left = x - textWidth / 2f - dp(17);
                 rect.top = y;
@@ -3691,6 +3709,20 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
             canvas.drawPath(backgroundPath, backgroundPaint);
             if (hasGradientService() && darkenBackgroundPaint.getAlpha() > 0) {
                 canvas.drawPath(backgroundPath, darkenBackgroundPaint);
+            }
+            if (md3DatePill && customDate == 0 && backgroundLeft - dp(8) > dp(40)) {
+                final float lineHalf = dp(1.5f);
+                for (int side = 0; side < 2; side++) {
+                    if (side == 0) {
+                        md3LineRect.set(dp(16), md3PillCenterY - lineHalf, backgroundLeft - dp(8), md3PillCenterY + lineHalf);
+                    } else {
+                        md3LineRect.set(backgroundRight + dp(8), md3PillCenterY - lineHalf, getMeasuredWidth() - dp(16), md3PillCenterY + lineHalf);
+                    }
+                    canvas.drawRoundRect(md3LineRect, lineHalf, lineHalf, backgroundPaint);
+                    if (hasGradientService() && darkenBackgroundPaint.getAlpha() > 0) {
+                        canvas.drawRoundRect(md3LineRect, lineHalf, lineHalf, darkenBackgroundPaint);
+                    }
+                }
             }
             if (dimAmount > 0) {
                 int wasAlpha = dimPaint.getAlpha();
