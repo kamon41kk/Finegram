@@ -2782,11 +2782,28 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             return;
         }
 
+        drawMd3BackCircle(canvas, hasBackButton);
         super.dispatchDraw(canvas);
         final float tileCollapse = getHeaderCollapse();
         if (tileCollapse > 0f) {
             drawTileContent(canvas, tileCollapse);
         }
+    }
+
+    private final Paint md3BackPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    private void drawMd3BackCircle(Canvas canvas, boolean hasBackButton) {
+        if (glassMode || chatAvatarContainer == null || !hasBackButton || backButtonImageView == null) {
+            return;
+        }
+        final float alpha = backButtonImageView.getAlpha();
+        if (alpha <= 0f) {
+            return;
+        }
+        final float cx = backButtonImageView.getX() + backButtonImageView.getWidth() / 2f + dp(0.5f);
+        final float cy = backButtonImageView.getY() + backButtonImageView.getHeight() / 2f;
+        md3BackPaint.setColor(ColorUtils.setAlphaComponent(itemsColor, (int) (0x1F * alpha)));
+        canvas.drawCircle(cx, cy, dp(20), md3BackPaint);
     }
 
     public void setForceSkipTouches(boolean forceSkipTouches) {
