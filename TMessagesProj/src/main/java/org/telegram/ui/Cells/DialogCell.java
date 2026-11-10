@@ -1176,7 +1176,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
     private boolean isMd3ChatList() {
         return parentFragment != null && FinegramAppearanceConfig.INSTANCE.getMd3ChatList()
-                && !isTopic && !isForumCell() && !isTransitionSupport;
+                && !isTopic && !isTransitionSupport;
     }
 
     private void drawMd3Card(Canvas canvas) {
