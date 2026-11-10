@@ -5048,6 +5048,9 @@ public class ChatActivityEnterView extends FrameLayout implements
             if (SharedConfig.chatBlurEnabled() && sizeNotifierLayout != null) {
                 blurBounds.set(0, bottom, getWidth(), getHeight());
                 sizeNotifierLayout.drawBlurRect(canvas, getTop(), blurBounds, backgroundPaint, false);
+            } else {
+                canvas.drawRect(0, bottom, getWidth(), getHeight(), backgroundPaint);
+            }
         } else {
             canvas.drawRect(0, bottom, getWidth(), getHeight(), getThemedPaint(Theme.key_paint_chatComposeBackground));
         }
